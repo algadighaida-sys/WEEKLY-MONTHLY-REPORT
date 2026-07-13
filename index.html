@@ -113,8 +113,7 @@
   .legend-row{display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:14px; font-size:12px; color:var(--sub);}
   .legend-dot{width:9px; height:9px; border-radius:50%; display:inline-block; margin-inline-end:6px;}
 
-  .summary-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px;}
-  @media (max-width:850px){.summary-grid{grid-template-columns:1fr;}}
+  .summary-grid{display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:18px;}
   .summary-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px;}
   .summary-card h3{margin:0 0 12px; font-size:14.5px;}
   .summary-card p{font-size:13px; line-height:1.9; color:#c9d2e3; margin:0 0 12px;}
@@ -288,10 +287,6 @@
         <h3 data-i18n="summaryTitle">الملخص التنفيذي</h3>
         <p id="summaryText">-</p>
       </div>
-      <div class="summary-card">
-        <h3 data-i18n="keywordsTitle">أكثر الكلمات تكرارًا في وصف الأعطال</h3>
-        <div id="keywordsBox">-</div>
-      </div>
     </div>
 
     <div class="ledger-card">
@@ -342,7 +337,7 @@ const I18N = {
     kpiStill:"طلبات قيد المعالجة", kpiStillSub:"أعمال مدنية / كهربائية نشطة",
     kpiSpr:"بانتظار قطع الغيار", kpiSprSub:"بانتظار التوريد",
     chartDeptTitle:"توزيع الأعطال حسب القسم الهندسي", chartStatusTitle:"حالة الطلبات",
-    summaryTitle:"الملخص التنفيذي", keywordsTitle:"أكثر الكلمات تكرارًا في وصف الأعطال",
+    summaryTitle:"الملخص التنفيذي",
     ledgerTitle:"سجل جميع طلبات الصيانة (منجزة / غير منجزة)",
     searchPh:"ابحث بالموقع، القسم، وصف العطل...", exportCsv:"تصدير CSV",
     colNo:"رقم", colDept:"القسم", colLocation:"الموقع", colComplaint:"وصف العطل", colStatus:"الحالة", colNote:"ملاحظة",
@@ -365,7 +360,7 @@ const I18N = {
     kpiStill:"Pending Requests", kpiStillSub:"Active civil / electrical works",
     kpiSpr:"Awaiting Spare Parts", kpiSprSub:"Pending supply dispatch",
     chartDeptTitle:"Engineering Faults Distribution", chartStatusTitle:"Work Order Status",
-    summaryTitle:"Executive Summary", keywordsTitle:"Most Frequent Complaint Keywords",
+    summaryTitle:"Executive Summary",
     ledgerTitle:"All Maintenance Requests Log (Completed / Not Completed)",
     searchPh:"Search by location, department, complaint...", exportCsv:"Export CSV",
     colNo:"No.", colDept:"Dept", colLocation:"Location", colComplaint:"Complaint", colStatus:"Status", colNote:"Note",
@@ -612,7 +607,6 @@ function renderAll(){
   renderKpis();
   renderCharts();
   renderSummary();
-  renderKeywords();
   renderTabs();
   renderLedger();
 }
@@ -730,26 +724,6 @@ function renderSummary(){
       + `As of the report date, ${still} tickets (${stillPct}%) remain under processing, including ${spr} awaiting spare parts supply.`;
   }
   document.getElementById('summaryText').textContent = text;
-}
-
-const STOPWORDS = new Set(['the','and','for','with','from','need','repair','not','working','is','are','in','of','to','a','an','at','on']);
-function renderKeywords(){
-  const freq = {};
-  rawTickets.forEach(t=>{
-    if(!t.complaint) return;
-    t.complaint.toLowerCase().split(/[^a-zA-Z\u0600-\u06FF]+/).forEach(w=>{
-      w = w.trim();
-      if(w.length < 3 || STOPWORDS.has(w)) return;
-      freq[w] = (freq[w]||0) + 1;
-    });
-  });
-  const top = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]).slice(0,10);
-  const box = document.getElementById('keywordsBox');
-  if(top.length === 0){
-    box.innerHTML = `<span style="color:var(--sub); font-size:12.5px;">${I18N[currentLang].emptyState}</span>`;
-    return;
-  }
-  box.innerHTML = top.map(w => `<span class="kw-chip">${w} · ${freq[w]}</span>`).join('');
 }
 
 function renderTabs(){
