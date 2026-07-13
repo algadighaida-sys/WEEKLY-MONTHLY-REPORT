@@ -134,6 +134,10 @@
     border-radius:8px; font-size:12.5px; cursor:pointer; display:flex; gap:6px; align-items:center;
   }
   .tab.active{background:var(--orange); color:#1a1300; border-color:var(--orange); font-weight:700;}
+  .tab[data-key="OK"]{border-color:#1e5c3a; color:var(--green);}
+  .tab[data-key="OK"].active{background:var(--green); color:#04170c; border-color:var(--green);}
+  .tab[data-key="INCOMPLETE"]{border-color:#7a4a12; color:var(--orange);}
+  .tab[data-key="INCOMPLETE"].active{background:var(--orange); color:#1a1300; border-color:var(--orange);}
   table{width:100%; border-collapse:collapse; font-size:12.8px;}
   thead th{
     text-align:start; color:var(--sub); font-weight:600; padding:10px 8px; border-bottom:1px solid var(--border);
@@ -342,7 +346,7 @@ const I18N = {
     ledgerTitle:"سجل جميع طلبات الصيانة (منجزة / غير منجزة)",
     searchPh:"ابحث بالموقع، القسم، وصف العطل...", exportCsv:"تصدير CSV",
     colNo:"رقم", colDept:"القسم", colLocation:"الموقع", colComplaint:"وصف العطل", colStatus:"الحالة", colNote:"ملاحظة",
-    emptyState:"لا توجد نتائج مطابقة", tabAll:"الكل", tabOk:"منجزة", tabUnder:"قيد الصيانة", tabSpr:"بانتظار القطع",
+    emptyState:"لا توجد نتائج مطابقة", tabAll:"الكل", tabOk:"منجزة", tabIncomplete:"غير مكتملة", tabUnder:"قيد الصيانة", tabSpr:"بانتظار القطع",
     fileChosen:"تم اختيار: ", noFile:"الرجاء اختيار ملف إكسل ثم الضغط على توليد التقرير",
     noHeader:"تعذر التعرف على أعمدة الملف. تأكدي من أن الملف يطابق تنسيق قالب التقرير الشهري.",
   },
@@ -365,7 +369,7 @@ const I18N = {
     ledgerTitle:"All Maintenance Requests Log (Completed / Not Completed)",
     searchPh:"Search by location, department, complaint...", exportCsv:"Export CSV",
     colNo:"No.", colDept:"Dept", colLocation:"Location", colComplaint:"Complaint", colStatus:"Status", colNote:"Note",
-    emptyState:"No matching results", tabAll:"All", tabOk:"Completed", tabUnder:"Under Maintenance", tabSpr:"Waiting Parts",
+    emptyState:"No matching results", tabAll:"All", tabOk:"Completed", tabIncomplete:"Incomplete", tabUnder:"Under Maintenance", tabSpr:"Waiting Parts",
     fileChosen:"Selected: ", noFile:"Please choose an Excel file, then click Generate Report",
     noHeader:"Could not detect the file's columns. Make sure it matches the monthly report template format.",
   }
@@ -760,6 +764,7 @@ function renderTabs(){
   let tabs = [
     {key:'ALL', label:dict.tabAll, count:rawTickets.length},
     {key:'OK', label:dict.tabOk, count:okCount},
+    {key:'INCOMPLETE', label:dict.tabIncomplete, count:underCount+sprCount},
     {key:'UNDER', label:dict.tabUnder, count:underCount},
     {key:'SPR', label:dict.tabSpr, count:sprCount},
   ];
@@ -787,6 +792,8 @@ function getFilteredTickets(){
     list = list.filter(t=>t.dept===d);
   } else if(filteredTab === 'OK'){
     list = list.filter(t=>t.status==='OK');
+  } else if(filteredTab === 'INCOMPLETE'){
+    list = list.filter(t=>t.status==='STILL');
   } else if(filteredTab === 'UNDER'){
     list = list.filter(t=>t.status==='STILL' && !t.note.toUpperCase().includes('SPR'));
   } else if(filteredTab === 'SPR'){
