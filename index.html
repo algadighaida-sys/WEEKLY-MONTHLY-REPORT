@@ -171,6 +171,26 @@
 </head>
 <body>
 
+<div id="loginScreen" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:32px; max-width:360px; width:100%; text-align:center;">
+    <div class="logo" style="margin:0 auto 16px;">📊</div>
+    <h2 style="margin:0 0 4px; font-size:16px;" data-i18n="loginTitle">تسجيل الدخول</h2>
+    <p style="margin:0 0 20px; font-size:12.5px; color:var(--sub);" data-i18n="loginSub">AMOS — تقرير صيانة مبنى 326</p>
+    <div class="field" style="text-align:start; margin-bottom:12px;">
+      <label data-i18n="loginUser">اسم المستخدم</label>
+      <input type="text" id="loginUsername" autocomplete="username" />
+    </div>
+    <div class="field" style="text-align:start; margin-bottom:8px;">
+      <label data-i18n="loginPass">كلمة المرور</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" />
+    </div>
+    <div id="loginError" style="display:none; color:var(--red); font-size:12.5px; margin-bottom:10px; text-align:start;" data-i18n="loginError">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+    <button class="btn primary" id="loginBtn" style="width:100%; justify-content:center;" data-i18n="loginBtn">دخول</button>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
+
 <header class="topbar">
   <div class="brand">
     <div class="logo">📊</div>
@@ -183,6 +203,7 @@
   <div class="actions">
     <button class="btn" id="langBtn">EN / العربية</button>
     <button class="btn primary" id="printBtn">🖨️ <span data-i18n="printBtn">طباعة التقرير</span></button>
+    <button class="btn" id="logoutBtn">🔓 <span data-i18n="logoutBtn">خروج</span></button>
   </div>
 </header>
 
@@ -320,10 +341,15 @@
   </section>
 </div>
 
+</div>
+
 <script>
 const I18N = {
   ar:{
     orgName:"ARABIAN MAINTENANCE OPERATION SERVICE",
+    loginTitle:"تسجيل الدخول", loginSub:"AMOS — تقرير صيانة مبنى 326",
+    loginUser:"اسم المستخدم", loginPass:"كلمة المرور", loginBtn:"دخول", logoutBtn:"خروج",
+    loginError:"اسم المستخدم أو كلمة المرور غير صحيحة",
     subTitleDefault:"تقرير صيانة فني موحد | مباني كلية البنات (مشروع الإمام)",
     printBtn:"طباعة التقرير",
     setupTitle:"إعداد التقرير",
@@ -347,6 +373,9 @@ const I18N = {
   },
   en:{
     orgName:"ARABIAN MAINTENANCE OPERATION SERVICE",
+    loginTitle:"Sign In", loginSub:"AMOS — Building 326 Maintenance Report",
+    loginUser:"Username", loginPass:"Password", loginBtn:"Sign In", logoutBtn:"Sign Out",
+    loginError:"Incorrect username or password",
     subTitleDefault:"Unified Technical Maintenance Report | Girls College Buildings (Imam Project)",
     printBtn:"Print Report",
     setupTitle:"Report Setup",
@@ -369,6 +398,43 @@ const I18N = {
     noHeader:"Could not detect the file's columns. Make sure it matches the monthly report template format.",
   }
 };
+// --- Simple access gate (client-side) ---
+const AUTH_USER = 'GHAIDA';
+const AUTH_PASS = '191';
+
+function showApp(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+}
+
+function tryLogin(){
+  const dict = I18N[currentLang];
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  if(u.toUpperCase() === AUTH_USER && p === AUTH_PASS){
+    sessionStorage.setItem('amos_authed', '1');
+    errEl.style.display = 'none';
+    showApp();
+  } else {
+    errEl.textContent = dict.loginError;
+    errEl.style.display = 'block';
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click', tryLogin);
+document.getElementById('loginPassword').addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryLogin(); });
+document.getElementById('loginUsername').addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryLogin(); });
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  sessionStorage.removeItem('amos_authed');
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+});
+
+if(sessionStorage.getItem('amos_authed') === '1'){ showApp(); }
+
 let currentLang = 'ar';
 
 const MONTHS = {
